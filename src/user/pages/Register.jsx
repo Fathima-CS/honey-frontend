@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   TextField,
@@ -6,72 +6,78 @@ import {
   Typography,
   Paper,
   Alert,
-} from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
-import UserNavbar from '../components/UserNavbar';
-import Footer from '../components/Footer';
+} from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
+import UserNavbar from "../components/UserNavbar";
+import Footer from "../components/Footer";
+import { registerAPI } from "../../services/allAPI";
 
 function Register() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: '',
-    email: '',
-    password: '',
+    username: "",
+    email: "",
+    password: "",
   });
 
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e) => {
+  // handle input change
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // submit with API
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { name, email, password } = form;
+    const { username, email, password } = form;
 
-    if (!name || !email || !password) {
-      setError('All fields are required');
+    if (!username || !email || !password) {
+      setError("All fields are required");
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem('users')) || [];
+    try {
+      const res = await registerAPI(form);
+      console.log(res.data);
 
-    const existingUser = users.find((u) => u.email === email);
-    if (existingUser) {
-      setError('Email already registered');
-      return;
+      setError("");
+      setSuccess("Registration successful 🎉");
+
+      setTimeout(() => navigate("/login"), 1200);
+    } catch (err) {
+      console.error(err);
+      setSuccess("");
+      setError(
+        err?.response?.data || "Registration failed ❌"
+      );
     }
-
-    users.push({ name, email, password, role: 'user' });
-    localStorage.setItem('users', JSON.stringify(users));
-
-    setError('');
-    setSuccess('Registration successful');
-
-    setTimeout(() => navigate('/login'), 1200);
   };
 
   const footerLinks = [
-    { text: 'Home', path: '/' },
-    { text: 'Login', path: '/login' },
+    { text: "Home", path: "/" },
+    { text: "Login", path: "/login" },
   ];
 
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: "100vh",
         background:
-          'linear-gradient(135deg, rgba(255,236,179,0.9), rgba(255,248,225,1))',
+          "linear-gradient(135deg, rgba(255,236,179,0.9), rgba(255,248,225,1))",
       }}
     >
       <UserNavbar />
 
-      {/* Register Section */}
       <Box
         sx={{
-          minHeight: '80vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          minHeight: "80vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           px: 2,
         }}
       >
@@ -79,136 +85,81 @@ function Register() {
           elevation={8}
           sx={{
             p: 4,
-            width: '100%',
+            width: "100%",
             maxWidth: 420,
             borderRadius: 3,
-            background: 'rgba(255,193,7,0.18)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,193,7,0.35)',
-            transition: 'all 0.35s ease',
-            '&:hover': {
-              transform: 'translateY(-6px)',
-              boxShadow: '0 18px 45px rgba(255,193,7,0.35)',
-              background: 'rgba(255,193,7,0.22)',
+            background: "rgba(255,193,7,0.18)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid rgba(255,193,7,0.35)",
+            transition: "all 0.35s ease",
+            "&:hover": {
+              transform: "translateY(-6px)",
+              boxShadow: "0 18px 45px rgba(255,193,7,0.35)",
+              background: "rgba(255,193,7,0.22)",
             },
           }}
         >
           <Typography
             variant="h4"
             align="center"
-            sx={{ fontWeight: 600, color: '#5D4037', mb: 1 }}
+            sx={{ fontWeight: 600, color: "#5D4037", mb: 1 }}
           >
             Join HoneyHub 🍯
           </Typography>
 
           <Typography
             align="center"
-            sx={{ color: '#6D4C41', mb: 3, fontSize: '0.95rem' }}
+            sx={{ color: "#6D4C41", mb: 3, fontSize: "0.95rem" }}
           >
             Create your account and explore pure honey
           </Typography>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-
-          {success && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              {success}
-            </Alert>
-          )}
+          {error && <Alert severity="error">{error}</Alert>}
+          {success && <Alert severity="success">{success}</Alert>}
 
           <form onSubmit={handleSubmit}>
-            {/* Name */}
             <TextField
               fullWidth
-              label="Full Name"
-              value={form.name}
-              onChange={(e) =>
-                setForm({ ...form, name: e.target.value })
-              }
+              label="Username"
+              name="username"
+              value={form.username}
+              onChange={handleChange}
               required
-              sx={{
-                mb: 2,
-                '& .MuiOutlinedInput-root': {
-                  transition: 'all 0.3s ease',
-                  '&:hover fieldset': {
-                    borderColor: '#F9A825',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#F9A825',
-                    boxShadow: '0 0 0 2px rgba(249,168,37,0.25)',
-                  },
-                },
-              }}
+              sx={{ mb: 2 }}
             />
 
-            {/* Email */}
             <TextField
               fullWidth
               label="Email Address"
+              name="email"
               type="email"
               value={form.email}
-              onChange={(e) =>
-                setForm({ ...form, email: e.target.value })
-              }
+              onChange={handleChange}
               required
-              sx={{
-                mb: 2,
-                '& .MuiOutlinedInput-root': {
-                  transition: 'all 0.3s ease',
-                  '&:hover fieldset': {
-                    borderColor: '#F9A825',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#F9A825',
-                    boxShadow: '0 0 0 2px rgba(249,168,37,0.25)',
-                  },
-                },
-              }}
+              sx={{ mb: 2 }}
             />
 
-            {/* Password */}
             <TextField
               fullWidth
               label="Password"
+              name="password"
               type="password"
               value={form.password}
-              onChange={(e) =>
-                setForm({ ...form, password: e.target.value })
-              }
+              onChange={handleChange}
               required
-              sx={{
-                mb: 3,
-                '& .MuiOutlinedInput-root': {
-                  transition: 'all 0.3s ease',
-                  '&:hover fieldset': {
-                    borderColor: '#F9A825',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#F9A825',
-                    boxShadow: '0 0 0 2px rgba(249,168,37,0.25)',
-                  },
-                },
-              }}
+              sx={{ mb: 3 }}
             />
 
-            {/* Register Button */}
             <Button
               type="submit"
               fullWidth
               size="large"
               sx={{
-                backgroundColor: 'rgba(249,168,37,0.9)',
-                color: '#3E2723',
+                backgroundColor: "rgba(249,168,37,0.9)",
+                color: "#3E2723",
                 fontWeight: 600,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  backgroundColor: 'rgba(249,168,37,1)',
-                  boxShadow: '0 8px 20px rgba(249,168,37,0.5)',
-                  transform: 'translateY(-2px)',
+                "&:hover": {
+                  backgroundColor: "rgba(249,168,37,1)",
                 },
               }}
             >
@@ -216,14 +167,14 @@ function Register() {
             </Button>
           </form>
 
-          <Typography align="center" sx={{ mt: 3, fontSize: '0.9rem' }}>
-            Already have an account?{' '}
+          <Typography align="center" sx={{ mt: 3 }}>
+            Already have an account?{" "}
             <Link
               to="/login"
               style={{
-                color: '#F57F17',
+                color: "#F57F17",
                 fontWeight: 600,
-                textDecoration: 'none',
+                textDecoration: "none",
               }}
             >
               Login here

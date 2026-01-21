@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -17,38 +17,71 @@ import {
   Paper,
   Grid,
 } from '@mui/material';
+
 import {
   ShoppingCart,
   AccountCircle,
   Menu as MenuIcon,
 } from '@mui/icons-material';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { CartContext } from '../../context/CartContext';
 
 function UserNavbar() {
-  const { user, logout } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
   const { cart } = useContext(CartContext);
   const navigate = useNavigate();
 
+  // ✅ keep state (UI unchanged)
+  const [token, setToken] = useState(sessionStorage.getItem("token"));
   const [anchorEl, setAnchorEl] = useState(null);
   const [shopAnchor, setShopAnchor] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleProfileMenuOpen = (event) => setAnchorEl(event.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
+  // ✅ keep token in sync (logout aware)
+  useEffect(() => {
+    const syncToken = () => {
+      setToken(sessionStorage.getItem("token"));
+    };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-    handleMenuClose();
+    window.addEventListener("storage", syncToken);
+    syncToken();
+
+    return () => {
+      window.removeEventListener("storage", syncToken);
+    };
+  }, []);
+
+  /* PROFILE MENU */
+  const handleProfileMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  const handleDrawerToggle = () => setMobileOpen(prev => !prev);
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    logout();                 // clears sessionStorage
+    setToken(null);           // 🔥 force re-render
+    handleMenuClose();
+    navigate('/');
+  };
+
+  /* MOBILE DRAWER */
+  const handleDrawerToggle = () => {
+    setMobileOpen((prev) => !prev);
+  };
 
   /* SHOP HOVER */
-  const handleShopOpen = (event) => setShopAnchor(event.currentTarget);
-  const handleShopClose = () => setShopAnchor(null);
+  const handleShopOpen = (event) => {
+    setShopAnchor(event.currentTarget);
+  };
+
+  const handleShopClose = () => {
+    setShopAnchor(null);
+  };
 
   const menuItems = [
     { text: 'Home', path: '/' },
@@ -76,9 +109,9 @@ function UserNavbar() {
 
   return (
     <>
+      {/* ================= NAVBAR ================= */}
       <AppBar position="static" sx={{ backgroundColor: '#E9AB17' }}>
         <Toolbar>
-          {/* Mobile Menu */}
           <IconButton
             color="inherit"
             edge="start"
@@ -88,7 +121,6 @@ function UserNavbar() {
             <MenuIcon />
           </IconButton>
 
-          {/* Logo */}
           <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
             <img
               src="https://i.pinimg.com/1200x/45/98/95/459895aab2a452a6333c4b32bd8454d8.jpg"
@@ -100,49 +132,45 @@ function UserNavbar() {
             </Typography>
           </Box>
 
-          {/* Desktop Menu */}
           <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
-            <Button color="inherit" component={Link} to="/">
-              Home
-            </Button>
-
-            {/* SHOP HOVER */}
+            <Button color="inherit" component={Link} to="/">Home</Button>
             <Button
               color="inherit"
+              component={Link}
+              to="/products"
               onMouseEnter={handleShopOpen}
-              component={Link} to="/products"
             >
               Products
             </Button>
-
-            <Button color="inherit" component={Link} to="/orders">
-              Orders
-            </Button>
-            <Button color="inherit" component={Link} to="/process">
-              Process
-            </Button>
+            <Button color="inherit" component={Link} to="/orders">Orders</Button>
+            <Button color="inherit" component={Link} to="/process">Process</Button>
           </Box>
 
-          {/* Cart */}
           <IconButton color="inherit" component={Link} to="/cart">
             <Badge badgeContent={cart?.length || 0} color="secondary">
               <ShoppingCart />
             </Badge>
           </IconButton>
 
-          {/* Profile */}
-          {user ? (
+          {/* ✅ LOGIN / PROFILE SWITCH */}
+          {token ? (
             <>
               <IconButton color="inherit" onClick={handleProfileMenuOpen}>
-                <AccountCircle />
+                <AccountCircle sx={{ fontSize: 32 }} />
               </IconButton>
+
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
               >
-                <MenuItem component={Link} to="/profile" onClick={handleMenuClose}>
-                  Profile
+                <MenuItem component={Link} to="/seller" onClick={handleMenuClose}>
+                  I want to be a Seller
+                </MenuItem>
+                <MenuItem component={Link} to="/buyer/dashboard" onClick={handleMenuClose}>
+                  My Orders
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
@@ -155,7 +183,7 @@ function UserNavbar() {
         </Toolbar>
       </AppBar>
 
-      {/* SHOP MEGA MENU */}
+      {/* ================= SHOP MEGA MENU ================= */}
       <Popper
         open={Boolean(shopAnchor)}
         anchorEl={shopAnchor}
@@ -165,49 +193,24 @@ function UserNavbar() {
       >
         <Paper sx={{ width: '100vw', p: 4 }}>
           <Grid container spacing={6}>
-            <MegaColumn
-              title="Honey Varieties"
-              items={[
-                'Sunflower Honey',
-                'Forest Honey',
-                'Acacia Honey',
-                'Sidr / Wild Berry Honey',
-                'Eucalyptus Honey',
-                'Ajwain Honey',
-                'Cotton Honey',
-              ]}
-            />
-            <MegaColumn
-              title="Honey Delicacies"
-              items={[
-                'Honey & Nuts',
-                'Honey Ginger Tea',
-                'Honey Lemon Jelly',
-                'Honey Peanut Butter',
-                'Honey Fruit Spreads',
-              ]}
-            />
-            <MegaColumn
-              title="Skin Care"
-              items={[
-                'Honey Lemongrass Soap',
-                'Honey Charcoal Soap',
-                'Honey Milk & Rose Soap',
-              ]}
-            />
-            <MegaColumn
-              title="Honey Medicines"
-              items={[
-                'Honey Tonic',
-                'Honey Brain Tonic',
-                'Bee Pollens',
-              ]}
-            />
+            <MegaColumn title="Honey Varieties" items={[
+              'Sunflower Honey','Forest Honey','Acacia Honey',
+              'Sidr / Wild Berry Honey','Eucalyptus Honey','Ajwain Honey','Cotton Honey'
+            ]}/>
+            <MegaColumn title="Honey Delicacies" items={[
+              'Honey & Nuts','Honey Ginger Tea','Honey Lemon Jelly',
+              'Honey Peanut Butter','Honey Fruit Spreads'
+            ]}/>
+            <MegaColumn title="Skin Care" items={[
+              'Honey Lemongrass Soap','Honey Charcoal Soap','Honey Milk & Rose Soap'
+            ]}/>
+            <MegaColumn title="Honey Medicines" items={[
+              'Honey Tonic','Honey Brain Tonic','Bee Pollens'
+            ]}/>
           </Grid>
         </Paper>
       </Popper>
 
-      {/* Mobile Drawer */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -223,12 +226,10 @@ function UserNavbar() {
   );
 }
 
-/* Mega Menu Column */
+/* ================= MEGA MENU COLUMN ================= */
 const MegaColumn = ({ title, items }) => (
   <Grid item xs={12} md={3}>
-    <Typography fontWeight={600} mb={2}>
-      {title}
-    </Typography>
+    <Typography fontWeight={600} mb={2}>{title}</Typography>
     {items.map((item) => (
       <Typography
         key={item}

@@ -1,8 +1,7 @@
-import React, { useState, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Box,
   Typography,
-  TextField,
   Button,
   Card,
   CardContent,
@@ -12,7 +11,6 @@ import {
   Stack,
 } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import LockIcon from "@mui/icons-material/Lock";
 import { useNavigate } from "react-router-dom";
@@ -20,37 +18,65 @@ import { useNavigate } from "react-router-dom";
 import UserNavbar from "../components/UserNavbar";
 import Footer from "../components/Footer";
 import { CartContext } from "../../context/CartContext";
+import { buyHoneyAPI } from "../../services/allAPI";
 
 function Checkout() {
   const { cart } = useContext(CartContext);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const [form, setForm] = useState({
-    address: "",
-    card: "",
-  });
+  const token = sessionStorage.getItem("token");
+
+  // 🔐 Redirect if not logged in
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    }
+  }, [token, navigate]);
+
+  // 🛒 Redirect if cart empty
+  useEffect(() => {
+    if (cart.length === 0) {
+      navigate("/cart");
+    }
+  }, [cart, navigate]);
+
+  // ⛔ stop rendering until redirects happen
+  if (!token || cart.length === 0) {
+    return null;
+  }
+
+  // ✅ Honey ID from cart (single-product checkout)
+  const honeyId = cart[0].id;
 
   const total = cart.reduce(
     (sum, item) => sum + item.price * (item.quantity || 1),
     0
   );
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Frontend-only success
-    navigate("/orders");
-  };
+  const makePayment = async () => {
+    try {
+      setLoading(true);
 
-  const footerLinks = [
-    { text: "Cart", path: "/cart" },
-    { text: "Orders", path: "/orders" },
-  ];
+      const reqHeader = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      const res = await buyHoneyAPI( reqHeader);
+
+      // 🔁 Redirect to Stripe Checkout
+      window.location.href = res.data.checkoutURL;
+    } catch (err) {
+      console.error("Payment failed", err);
+      alert(err.response?.data || "Payment failed");
+      setLoading(false);
+    }
+  };
 
   return (
     <>
       <UserNavbar />
 
-      {/* Background */}
       <Box
         sx={{
           minHeight: "100vh",
@@ -60,7 +86,6 @@ function Checkout() {
         }}
       >
         <Container maxWidth="lg">
-          {/* Page Title */}
           <Stack direction="row" spacing={1.5} alignItems="center" mb={4}>
             <ShoppingBagIcon color="primary" />
             <Typography variant="h4" fontWeight={700}>
@@ -69,11 +94,10 @@ function Checkout() {
           </Stack>
 
           <Grid container spacing={4}>
-            {/* LEFT – Shipping & Payment */}
-            <Grid size={{ xs: 12, md: 6 }}>
+            {/* LEFT */}
+            <Grid item xs={12} md={6}>
               <Card elevation={4} sx={{ borderRadius: 3 }}>
                 <CardContent>
-                  {/* Shipping */}
                   <Stack direction="row" spacing={1} alignItems="center" mb={2}>
                     <LocationOnIcon color="secondary" />
                     <Typography variant="h6">
@@ -81,85 +105,45 @@ function Checkout() {
                     </Typography>
                   </Stack>
 
-                  <TextField
-                    fullWidth
-                    label="Full Address"
-                    placeholder="House no, Street, City, Pincode"
-                    value={form.address}
-                    onChange={(e) =>
-                      setForm({ ...form, address: e.target.value })
-                    }
-                    sx={{ mb: 3 }}
-                    required
-                  />
+                  <Typography color="text.secondary">
+                    Address will be collected after payment.
+                  </Typography>
 
                   <Divider sx={{ my: 3 }} />
 
-                  {/* Payment */}
-                  <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-                    <CreditCardIcon color="secondary" />
-                    <Typography variant="h6">
-                      Payment Information
-                    </Typography>
-                  </Stack>
-
-                  <TextField
-                    fullWidth
-                    label="Card Number"
-                    placeholder="XXXX XXXX XXXX XXXX"
-                    value={form.card}
-                    onChange={(e) =>
-                      setForm({ ...form, card: e.target.value })
-                    }
-                    required
-                  />
-
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    alignItems="center"
-                    mt={2}
-                  >
-                    <LockIcon fontSize="small" color="action" />
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <LockIcon fontSize="small" />
                     <Typography variant="body2" color="text.secondary">
-                      Your payment details are securely encrypted.
+                      Secure payment handled by Stripe
                     </Typography>
                   </Stack>
                 </CardContent>
               </Card>
             </Grid>
 
-            {/* RIGHT – Order Summary */}
-            <Grid size={{ xs: 12, md: 6 }}>
+            {/* RIGHT */}
+            <Grid item xs={12} md={6}>
               <Card elevation={4} sx={{ borderRadius: 3 }}>
                 <CardContent>
-                  <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-                    <ShoppingBagIcon color="secondary" />
-                    <Typography variant="h6">
-                      Order Summary
-                    </Typography>
-                  </Stack>
+                  <Typography variant="h6" mb={2}>
+                    Order Summary
+                  </Typography>
 
-                  {cart.length === 0 ? (
-                    <Typography>No items in cart.</Typography>
-                  ) : (
-                    cart.map((item) => (
-                      <Box
-                        key={item.id}
-                        display="flex"
-                        justifyContent="space-between"
-                        mb={1}
-                      >
-                        <Typography>
-                          {item.name} × {item.quantity || 1}
-                        </Typography>
-                        <Typography>
-                          ₹
-                          {(item.price * (item.quantity || 1)).toFixed(2)}
-                        </Typography>
-                      </Box>
-                    ))
-                  )}
+                  {cart.map((item) => (
+                    <Box
+                      key={item.id}
+                      display="flex"
+                      justifyContent="space-between"
+                      mb={1}
+                    >
+                      <Typography>
+                        {item.name} × {item.quantity || 1}
+                      </Typography>
+                      <Typography>
+                        ₹{(item.price * (item.quantity || 1)).toFixed(2)}
+                      </Typography>
+                    </Box>
+                  ))}
 
                   <Divider sx={{ my: 2 }} />
 
@@ -168,37 +152,21 @@ function Checkout() {
                     justifyContent="space-between"
                     alignItems="center"
                   >
-                    <Typography variant="h6" fontWeight={600}>
-                      Total
-                    </Typography>
-                    <Typography
-                      variant="h5"
-                      fontWeight={700}
-                      color="secondary.main"
-                    >
+                    <Typography variant="h6">Total</Typography>
+                    <Typography variant="h5" fontWeight={700}>
                       ₹{total.toFixed(2)}
                     </Typography>
                   </Box>
 
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mt: 1 }}
-                  >
-                    Estimated delivery: 3–5 business days
-                  </Typography>
-
                   <Button
                     variant="contained"
-                    size="large"
                     fullWidth
-                    onClick={handleSubmit}
-                    sx={{
-                      mt: 3,
-                      borderRadius: 2,
-                    }}
+                    size="large"
+                    sx={{ mt: 3 }}
+                    onClick={makePayment}
+                    disabled={loading}
                   >
-                    Place Order
+                    {loading ? "Redirecting..." : "Pay with Stripe"}
                   </Button>
                 </CardContent>
               </Card>
@@ -207,7 +175,7 @@ function Checkout() {
         </Container>
       </Box>
 
-      <Footer links={footerLinks} />
+      <Footer />
     </>
   );
 }

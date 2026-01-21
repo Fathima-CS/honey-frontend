@@ -20,7 +20,7 @@ import ImageIcon from "@mui/icons-material/Image";
 import NumbersIcon from "@mui/icons-material/Numbers";
 import SaveIcon from "@mui/icons-material/Save";
 
-
+import { addProductAPI } from "../../services/allAPI";
 
 const AddProduct = () => {
   const [product, setProduct] = useState({
@@ -28,188 +28,172 @@ const AddProduct = () => {
     price: "",
     origin: "",
     stock: "",
-    image: "",
+    image: null,
     description: "",
   });
-
+  console.log(product);
   const handleChange = (field, value) => {
     setProduct({ ...product, [field]: value });
   };
 
-  const handleSubmit = () => {
-    // Frontend-only submit
-    console.log("Product Added:", product);
-    alert("Product added successfully (frontend demo)");
+  const handleImageChange = (e) => {
+    setProduct({ ...product, image: e.target.files[0] });
+  };
+
+  const handleSubmit = async () => {
+    const token = sessionStorage.getItem("token");
+    const reqHeader={
+      Authorization: `Bearer ${token}`,
+   }
+    try {
+      const formData = new FormData();
+      formData.append("name", product.name);
+      formData.append("price", product.price);
+      formData.append("origin", product.origin);
+      formData.append("stock", product.stock);
+      formData.append("description", product.description);
+      formData.append("image", product.image); // multer expects "image"
+
+      await addProductAPI(formData,reqHeader);
+
+      alert("Product added successfully");
+
+      setProduct({
+        name: "",
+        price: "",
+        origin: "",
+        stock: "",
+        image: null,
+        description: "",
+      });
+    } catch (error) {
+      console.error("Add product failed:", error);
+      alert("Failed to add product");
+    }
   };
 
   return (
-    <>
-     
+    <Box
+      sx={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #91845b 0%, #F3E5AB 100%)",
+        py: 6,
+      }}
+    >
+      <Container maxWidth="md">
+        <Card
+          elevation={0}
+          sx={{
+            borderRadius: 5,
+            boxShadow: "0 20px 45px rgba(0,0,0,0.15)",
+            background: "linear-gradient(180deg,#FFFDF6,#FFF8E1)",
+          }}
+        >
+          <CardContent sx={{ p: 5 }}>
+            <Stack direction="row" spacing={1.5} alignItems="center" mb={3}>
+              <InventoryIcon sx={{ color: "#8D6E3F" }} />
+              <Typography variant="h4" fontWeight={800} sx={{ color: "#5B3A1C" }}>
+                Add New Product
+              </Typography>
+            </Stack>
 
-      {/* PAGE BACKGROUND */}
-      <Box
-        sx={{
-          minHeight: "100vh",
-          background:
-            "linear-gradient(135deg, #FFF8E1 0%, #F3E5AB 100%)",
-          py: 6,
-        }}
-      >
-        <Container maxWidth="md">
-          <Card elevation={5} sx={{ borderRadius: 4 }}>
-            <CardContent sx={{ p: 4 }}>
-              {/* HEADER */}
-              <Stack direction="row" spacing={1.5} alignItems="center" mb={3}>
-                <InventoryIcon color="primary" />
-                <Typography variant="h4" fontWeight={700}>
-                  Add New Product
-                </Typography>
-              </Stack>
+            <Divider sx={{ mb: 4 }} />
 
-              <Divider sx={{ mb: 3 }} />
-
-              <Grid container spacing={3}>
-                {/* Product Name */}
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    fullWidth
-                    label="Product Name"
-                    placeholder="Wild Forest Honey"
-                    value={product.name}
-                    onChange={(e) =>
-                      handleChange("name", e.target.value)
-                    }
-                    InputProps={{
-                      startAdornment: <InventoryIcon sx={{ mr: 1 }} />,
-                    }}
-                  />
-                </Grid>
-
-                {/* Price */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    fullWidth
-                    label="Price (₹)"
-                    type="number"
-                    value={product.price}
-                    onChange={(e) =>
-                      handleChange("price", e.target.value)
-                    }
-                    InputProps={{
-                      startAdornment: <CurrencyRupeeIcon sx={{ mr: 1 }} />,
-                    }}
-                  />
-                </Grid>
-
-                {/* Stock */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    fullWidth
-                    label="Stock Quantity"
-                    type="number"
-                    value={product.stock}
-                    onChange={(e) =>
-                      handleChange("stock", e.target.value)
-                    }
-                    InputProps={{
-                      startAdornment: <NumbersIcon sx={{ mr: 1 }} />,
-                    }}
-                  />
-                </Grid>
-
-                {/* Origin */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    fullWidth
-                    label="Origin"
-                    placeholder="Western Ghats"
-                    value={product.origin}
-                    onChange={(e) =>
-                      handleChange("origin", e.target.value)
-                    }
-                    InputProps={{
-                      startAdornment: <PublicIcon sx={{ mr: 1 }} />,
-                    }}
-                  />
-                </Grid>
-
-                {/* Image URL */}
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    fullWidth
-                    label="Image URL"
-                    placeholder="https://..."
-                    value={product.image}
-                    onChange={(e) =>
-                      handleChange("image", e.target.value)
-                    }
-                    InputProps={{
-                      startAdornment: <ImageIcon sx={{ mr: 1 }} />,
-                    }}
-                  />
-                </Grid>
-
-                {/* Description */}
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    fullWidth
-                    label="Product Description"
-                    multiline
-                    rows={4}
-                    value={product.description}
-                    onChange={(e) =>
-                      handleChange("description", e.target.value)
-                    }
-                    InputProps={{
-                      startAdornment: (
-                        <DescriptionIcon sx={{ mr: 1, mt: 1 }} />
-                      ),
-                    }}
-                  />
-                </Grid>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Product Name"
+                  value={product.name}
+                  onChange={(e) => handleChange("name", e.target.value)}
+                />
               </Grid>
 
-              {/* IMAGE PREVIEW */}
-              {product.image && (
-                <Box
-                  mt={3}
-                  sx={{
-                    borderRadius: 3,
-                    overflow: "hidden",
-                    boxShadow: 3,
-                  }}
-                >
-                  <img
-                    src={product.image}
-                    alt="Preview"
-                    style={{
-                      width: "100%",
-                      maxHeight: 260,
-                      objectFit: "cover",
-                    }}
-                  />
-                </Box>
-              )}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Price (₹)"
+                  value={product.price}
+                  onChange={(e) => handleChange("price", e.target.value)}
+                />
+              </Grid>
 
-              {/* SUBMIT */}
-              <Box display="flex" justifyContent="flex-end" mt={4}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Stock Quantity"
+                  value={product.stock}
+                  onChange={(e) => handleChange("stock", e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Origin"
+                  value={product.origin}
+                  onChange={(e) => handleChange("origin", e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
                 <Button
-                  variant="contained"
-                  size="large"
-                  startIcon={<SaveIcon />}
-                  onClick={handleSubmit}
-                  sx={{ px: 4, borderRadius: 2 }}
+                  variant="outlined"
+                  component="label"
+                  startIcon={<ImageIcon />}
                 >
-                  Save Product
+                  Upload Product Image
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
                 </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Container>
-      </Box>
+              </Grid>
 
-      
-    </>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  label="Product Description"
+                  value={product.description}
+                  onChange={(e) =>
+                    handleChange("description", e.target.value)
+                  }
+                />
+              </Grid>
+            </Grid>
+
+            <Box display="flex" justifyContent="flex-end" mt={5}>
+              <Button
+                size="large"
+                startIcon={<SaveIcon />}
+                onClick={handleSubmit}
+                sx={{
+                  px: 5,
+                  py: 1.4,
+                  borderRadius: 3,
+                  fontWeight: 800,
+                  background:
+                    "linear-gradient(135deg,#FFB300,#FFD54F)",
+                  color: "#3E2723",
+                  "&:hover": {
+                    background:
+                      "linear-gradient(135deg,#FFA000,#FFCA28)",
+                  },
+                }}
+              >
+                Save Product
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
   );
 };
 

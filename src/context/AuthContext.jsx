@@ -1,21 +1,29 @@
-import React, { createContext, useState } from 'react';
-import authService from '../services/authService';
+import { createContext, useState } from "react";
+import { loginAPI } from "../services/allAPI";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem('currentUser'))
+    JSON.parse(sessionStorage.getItem("currentUser"))
   );
 
-  const login = (email, password) => {
-    const loggedUser = authService.login(email, password);
-    setUser(loggedUser);
-    return loggedUser;
+  // LOGIN
+  const login = async (email, password) => {
+    const res = await loginAPI({ email, password });
+
+    if (res.status === 200) {
+      sessionStorage.setItem("currentUser", JSON.stringify(res.data.user));
+      sessionStorage.setItem("token", res.data.token);
+      setUser(res.data.user);
+      return res.data.user;
+    }
   };
 
+  // LOGOUT
   const logout = () => {
-    authService.logout();
+    sessionStorage.removeItem("currentUser");
+    sessionStorage.removeItem("token");
     setUser(null);
   };
 

@@ -24,7 +24,8 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 
 import SellerStats from "../components/SellerStats";
 import SellerNavbar from "../components/SellerNavbar";
-import Footer from "../../user/components/Footer";
+import SellerSidebar from "../components/SellerSidebar";
+import Footer from "../../seller/components/SellerFooter";
 
 const SellerDashboard = () => {
   /* FRONTEND-ONLY DATA */
@@ -67,217 +68,226 @@ const SellerDashboard = () => {
 
   return (
     <>
-      
+      {/* TOP NAVBAR */}
+      {/* <SellerNavbar /> */}
 
-      {/* PAGE BACKGROUND */}
-      <Box
-        sx={{
-          minHeight: "100vh",
-          background:
-            "linear-gradient(135deg, #FFF8E1 0%, #F3E5AB 100%)",
-          p: 4,
-        }}
-      >
-        {/* TITLE */}
-        <Typography variant="h4" fontWeight={700} mb={4}>
-          Seller Dashboard
-        </Typography>
+      {/* SIDEBAR + CONTENT */}
+      <Box sx={{ display: "flex" }}>
+        {/* LEFT SIDEBAR */}
+        <SellerSidebar />
 
-        {/* STATS */}
-        <Grid container spacing={3} mb={4}>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <SellerStats title="Products" value="24" icon={<InventoryIcon />} />
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <SellerStats title="Orders" value="68" icon={<ShoppingCartIcon />} />
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <SellerStats
-              title="Revenue"
-              value="₹48,200"
-              icon={<MonetizationOnIcon />}
-            />
-          </Grid>
-        </Grid>
+        {/* MAIN CONTENT */}
+        <Box
+          sx={{
+            flexGrow: 1,
+            minHeight: "100vh",
+            background:
+              "linear-gradient(135deg, #FFF8E1 0%, #F3E5AB 100%)",
+            p: 4,
+          }}
+        >
+          {/* TITLE */}
+          <Typography variant="h4" fontWeight={700} mb={4}>
+            Seller Dashboard
+          </Typography>
 
-        {/* PERFORMANCE + TOP PRODUCT */}
-        <Grid container spacing={3} mb={4}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card elevation={4} sx={{ borderRadius: 3 }}>
-              <CardContent>
-                <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-                  <TrendingUpIcon color="success" />
-                  <Typography variant="h6">Business Performance</Typography>
-                </Stack>
-
-                <Typography color="text.secondary">
-                  Your honey sales are growing steadily this month.
-                </Typography>
-
-                <Stack spacing={1} mt={2}>
-                  <Typography>✔ 18% increase in sales</Typography>
-                  <Typography>✔ 12 new customers</Typography>
-                  <Typography>✔ Faster order fulfillment</Typography>
-                </Stack>
-
-                <Button
-                  variant="outlined"
-                  startIcon={<AddIcon />}
-                  sx={{ mt: 3 }}
-                >
-                  Add New Product
-                </Button>
-              </CardContent>
-            </Card>
+          {/* STATS */}
+          <Grid container spacing={3} mb={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <SellerStats title="Products" value="24" icon={<InventoryIcon />} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <SellerStats title="Orders" value="68" icon={<ShoppingCartIcon />} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <SellerStats
+                title="Revenue"
+                value="₹48,200"
+                icon={<MonetizationOnIcon />}
+              />
+            </Grid>
           </Grid>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card elevation={4} sx={{ borderRadius: 3 }}>
-              <CardContent>
-                <Typography variant="h6" mb={2}>
-                  Top Selling Product
-                </Typography>
-
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Avatar
-                    variant="rounded"
-                    src={products[0].image}
-                    sx={{ width: 80, height: 80 }}
-                  />
-                  <Box>
-                    <Typography fontWeight={600}>
-                      {products[0].name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      120 units sold
-                    </Typography>
-                    <Typography color="secondary.main" fontWeight={600}>
-                      ₹18,000 Revenue
-                    </Typography>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        {/* RECENT ORDERS */}
-        <Card elevation={4} sx={{ borderRadius: 3, mb: 4 }}>
-          <CardContent>
-            <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-              <LocalShippingIcon color="primary" />
-              <Typography variant="h6">Recent Orders</Typography>
-            </Stack>
-
-            <Divider sx={{ mb: 2 }} />
-
-            {recentOrders.map((order) => (
-              <Box
-                key={order.id}
-                display="flex"
-                justifyContent="space-between"
-                mb={1.5}
-              >
-                <Box>
-                  <Typography fontWeight={500}>{order.product}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {order.id} | Qty: {order.qty}
-                  </Typography>
-                </Box>
-                <Typography
-                  fontWeight={600}
-                  color={
-                    order.status === "Delivered"
-                      ? "success.main"
-                      : "warning.main"
-                  }
-                >
-                  {order.status}
-                </Typography>
-              </Box>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* ALL PRODUCTS */}
-        <Typography variant="h5" fontWeight={600} mb={3}>
-          My Products
-        </Typography>
-
-        <Grid container spacing={4}>
-          {products.map((product) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product.id}>
-              <Card
-                elevation={4}
-                sx={{
-                  borderRadius: 4,
-                  background:
-                    "linear-gradient(180deg, #FFFDF6 0%, #FBE7B2 100%)",
-                  transition: "0.3s",
-                  "&:hover": {
-                    transform: "translateY(-6px)",
-                    boxShadow: 8,
-                  },
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  height="180"
-                  image={product.image}
-                  alt={product.name}
-                />
-
+          {/* PERFORMANCE + TOP PRODUCT */}
+          <Grid container spacing={3} mb={4}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card elevation={4} sx={{ borderRadius: 3 }}>
                 <CardContent>
-                  <Typography fontWeight={700}>
-                    {product.name}
+                  <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                    <TrendingUpIcon color="success" />
+                    <Typography variant="h6">Business Performance</Typography>
+                  </Stack>
+
+                  <Typography color="text.secondary">
+                    Your honey sales are growing steadily this month.
                   </Typography>
 
-                  <Typography color="secondary.main" fontWeight={600}>
-                    ₹{product.price}
+                  <Stack spacing={1} mt={2}>
+                    <Typography>✔ 18% increase in sales</Typography>
+                    <Typography>✔ 12 new customers</Typography>
+                    <Typography>✔ Faster order fulfillment</Typography>
+                  </Stack>
+
+                  <Button
+                    variant="outlined"
+                    startIcon={<AddIcon />}
+                    sx={{ mt: 3 }}
+                  >
+                    Add New Product
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card elevation={4} sx={{ borderRadius: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" mb={2}>
+                    Top Selling Product
                   </Typography>
 
-                  <Typography variant="body2" color="text.secondary">
-                    Stock: {product.stock}
-                  </Typography>
-
-                  <Chip
-                    label={product.status}
-                    size="small"
-                    sx={{ my: 1 }}
-                    color={
-                      product.status === "Active"
-                        ? "success"
-                        : product.status === "Low Stock"
-                        ? "warning"
-                        : "error"
-                    }
-                  />
-
-                  <Stack direction="row" spacing={1}>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      startIcon={<VisibilityIcon />}
-                      fullWidth
-                    >
-                      View
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      startIcon={<EditIcon />}
-                      fullWidth
-                    >
-                      Edit
-                    </Button>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Avatar
+                      variant="rounded"
+                      src={products[0].image}
+                      sx={{ width: 80, height: 80 }}
+                    />
+                    <Box>
+                      <Typography fontWeight={600}>
+                        {products[0].name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        120 units sold
+                      </Typography>
+                      <Typography color="secondary.main" fontWeight={600}>
+                        ₹18,000 Revenue
+                      </Typography>
+                    </Box>
                   </Stack>
                 </CardContent>
               </Card>
             </Grid>
-          ))}
-        </Grid>
+          </Grid>
+
+          {/* RECENT ORDERS */}
+          <Card elevation={4} sx={{ borderRadius: 3, mb: 4 }}>
+            <CardContent>
+              <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                <LocalShippingIcon color="primary" />
+                <Typography variant="h6">Recent Orders</Typography>
+              </Stack>
+
+              <Divider sx={{ mb: 2 }} />
+
+              {recentOrders.map((order) => (
+                <Box
+                  key={order.id}
+                  display="flex"
+                  justifyContent="space-between"
+                  mb={1.5}
+                >
+                  <Box>
+                    <Typography fontWeight={500}>{order.product}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {order.id} | Qty: {order.qty}
+                    </Typography>
+                  </Box>
+                  <Typography
+                    fontWeight={600}
+                    color={
+                      order.status === "Delivered"
+                        ? "success.main"
+                        : "warning.main"
+                    }
+                  >
+                    {order.status}
+                  </Typography>
+                </Box>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* ALL PRODUCTS */}
+          <Typography variant="h5" fontWeight={600} mb={3}>
+            My Products
+          </Typography>
+
+          <Grid container spacing={4}>
+            {products.map((product) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={product.id}>
+                <Card
+                  elevation={4}
+                  sx={{
+                    borderRadius: 4,
+                    background:
+                      "linear-gradient(180deg, #FFFDF6 0%, #FBE7B2 100%)",
+                    transition: "0.3s",
+                    "&:hover": {
+                      transform: "translateY(-6px)",
+                      boxShadow: 8,
+                    },
+                  }}
+                >
+                  <CardMedia
+                    component="img"
+                    height="180"
+                    image={product.image}
+                    alt={product.name}
+                  />
+
+                  <CardContent>
+                    <Typography fontWeight={700}>
+                      {product.name}
+                    </Typography>
+
+                    <Typography color="secondary.main" fontWeight={600}>
+                      ₹{product.price}
+                    </Typography>
+
+                    <Typography variant="body2" color="text.secondary">
+                      Stock: {product.stock}
+                    </Typography>
+
+                    <Chip
+                      label={product.status}
+                      size="small"
+                      sx={{ my: 1 }}
+                      color={
+                        product.status === "Active"
+                          ? "success"
+                          : product.status === "Low Stock"
+                          ? "warning"
+                          : "error"
+                      }
+                    />
+
+                    <Stack direction="row" spacing={1}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={<VisibilityIcon />}
+                        fullWidth
+                      >
+                        View
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        startIcon={<EditIcon />}
+                        fullWidth
+                      >
+                        Edit
+                      </Button>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
       </Box>
 
+      {/* FOOTER */}
       <Footer
         links={[
           { text: "Dashboard", path: "/seller" },

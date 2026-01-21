@@ -1,69 +1,81 @@
 import React from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import PropTypes from "prop-types";
+import { Box, Typography } from "@mui/material";
 
 function AdminTable({
-  columns,
-  rows,
+  columns = [],
+  rows = [],
   title,
   height = 400,
   pageSize = 10,
 }) {
   return (
-    <div style={{ padding: 16, backgroundColor: "#fff" }}>
+    <Box
+      sx={{
+        p: 3,
+        bgcolor: "#ffffff",
+        borderRadius: 3,
+        boxShadow: "0 8px 24px rgba(0,0,0,0.05)",
+      }}
+    >
       {title && (
-        <h3 style={{ color: "#F9A825", marginBottom: 12 }}>
+        <Typography
+          variant="h6"
+          fontWeight={600}
+          mb={2}
+          sx={{ color: "#111827" }}
+        >
           {title}
-        </h3>
+        </Typography>
       )}
 
-      <div style={{ height, width: "100%" }}>
+      <Box sx={{ height, width: "100%" }}>
         <DataGrid
           rows={rows}
           columns={columns}
-          checkboxSelection
           pageSizeOptions={[5, 10, 25]}
           initialState={{
             pagination: {
-              paginationModel: {
-                page: 0,
-                pageSize: pageSize,
-              },
+              paginationModel: { page: 0, pageSize },
             },
           }}
+          disableRowSelectionOnClick
           sx={{
             border: "none",
+            fontSize: "0.95rem",
+
             "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#FFD95A",
+              backgroundColor: "#f9fafb",
+              color: "#374151",
               fontWeight: 600,
+              borderBottom: "1px solid #e5e7eb",
             },
+
+            "& .MuiDataGrid-row": {
+              borderBottom: "1px solid #f1f5f9",
+            },
+
             "& .MuiDataGrid-row:hover": {
-              backgroundColor: "#FFF3CD",
+              backgroundColor: "#f9fafb",
+            },
+
+            "& .MuiDataGrid-cell": {
+              color: "#374151",
+            },
+
+            "& .MuiDataGrid-footerContainer": {
+              borderTop: "1px solid #e5e7eb",
+              backgroundColor: "#fafafa",
+            },
+
+            "& .MuiTablePagination-root": {
+              color: "#374151",
             },
           }}
         />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
-
-AdminTable.propTypes = {
-  columns: PropTypes.arrayOf(
-    PropTypes.shape({
-      field: PropTypes.string.isRequired,
-      headerName: PropTypes.string.isRequired,
-      width: PropTypes.number,
-      flex: PropTypes.number,
-    })
-  ).isRequired,
-  rows: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-    })
-  ).isRequired,
-  title: PropTypes.string,
-  height: PropTypes.number,
-  pageSize: PropTypes.number,
-};
 
 export default AdminTable;
