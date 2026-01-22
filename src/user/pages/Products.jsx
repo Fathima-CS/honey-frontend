@@ -1,33 +1,22 @@
-import React, { useState, useEffect, use } from "react";
-import { Box, Typography, TextField, Grid } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Box, Typography, Grid } from "@mui/material";
 
 import UserNavbar from "../components/UserNavbar";
 import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
-
-/* API */
-import { getUserAllHoneyAPI } from "../../services/allAPI";
+import { getUserproductAPI } from "../../services/allAPI";
 
 function Products() {
-  const [search, setSearch] = useState("");
-  const [data, setData] = useState({
-    varieties: [],
-    delicacies: [],
-    skin: [],
-    medicine: [],
-  });
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  console.log(products)
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
-  const filterProducts = (products) =>
-    products.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase())
-    );
-   
-    const token = localStorage.getItem("userToken");    
-   
-  /* FETCH ALL HONEY FROM BACKEND */
-  const fetchAllHoney = async () => {
+  const fetchProducts = async () => {
     try {
-     
+      const token = sessionStorage.getItem("token");
       if (!token) {
         console.error("Token not found");
         return;
@@ -37,28 +26,14 @@ function Products() {
         Authorization: `Bearer ${token}`,
       };
 
-      const result = await getUserAllHoneyAPI(reqHeader);
-
-      // ✅ expected backend response
-      setData({
-        varieties: result.data.varieties || [],
-        delicacies: result.data.delicacies || [],
-        skin: result.data.skin || [],
-        medicine: result.data.medicine || [],
-      });
+      const result = await getUserproductAPI(reqHeader);
+      setProducts(result.data || []);
     } catch (error) {
-      console.error("Failed to fetch honey products", error);
+      console.error("Failed to fetch products", error);
+    } finally {
+      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchAllHoney();
-  }, []);
-
-  const footerLinks = [
-    { text: "Home", path: "/" },
-    { text: "Cart", path: "/cart" },
-  ];
 
   return (
     <Box>
@@ -69,64 +44,29 @@ function Products() {
           Our Products
         </Typography>
 
-        <TextField
-          fullWidth
-          label="Search Products"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ mb: 4 }}
-        />
+        {loading && <Typography>Loading products...</Typography>}
 
-        {/* HONEY VARIETIES */}
-        <Typography variant="h5" gutterBottom>
-          Honey Varieties
-        </Typography>
-        <Grid container spacing={3}>
-          {filterProducts(data.varieties).map((product) => (
-            <Grid item xs={12} sm={6} md={4} key={product._id}>
-              <ProductCard product={product} />
-            </Grid>
-          ))}
-        </Grid>
+        {!loading && products.length === 0 && (
+          <Typography>No products available</Typography>
+        )}
 
-        {/* DELICACIES */}
-        <Typography variant="h5" sx={{ mt: 6 }} gutterBottom>
-          Honey Delicacies
-        </Typography>
-        <Grid container spacing={3}>
-          {filterProducts(data.delicacies).map((product) => (
-            <Grid item xs={12} sm={6} md={4} key={product._id}>
-              <ProductCard product={product} />
-            </Grid>
-          ))}
-        </Grid>
-
-        {/* SKIN CARE */}
-        <Typography variant="h5" sx={{ mt: 6 }} gutterBottom>
-          Skin Care
-        </Typography>
-        <Grid container spacing={3}>
-          {filterProducts(data.skin).map((product) => (
-            <Grid item xs={12} sm={6} md={4} key={product._id}>
-              <ProductCard product={product} />
-            </Grid>
-          ))}
-        </Grid>
-
-        {/* MEDICINES */}
-        <Typography variant="h5" sx={{ mt: 6 }} gutterBottom>
-          Honey Medicines
-        </Typography>
-        <Grid container spacing={3}>
-          {filterProducts(data.medicine).map((product) => (
-            <Grid item xs={12} sm={6} md={4} key={product._id}>
-              <ProductCard product={product} />
-            </Grid>
-          ))}
-        </Grid>
+        {!loading && products.length > 0 && (
+          <Grid container spacing={3}>
+            {products.map((product) => (
+              <Grid item xs={12} sm={6} md={4} key={product._id}>
+                <ProductCard product={product} />
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </Box>
 
-      <Footer links={footerLinks} />
+      <Footer
+        links={[
+          { text: "Home", path: "/" },
+          { text: "Cart", path: "/cart" },
+        ]}
+      />
     </Box>
   );
 }

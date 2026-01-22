@@ -17,6 +17,7 @@ import AdminNavbar from "../components/AdminNavbar";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminStatsCard from "../components/AdminStatsCard";
 import AdminTable from "../components/AdminTable";
+import UserNavbar from "../../user/components/UserNavbar";
 
 /* =========================
    DATA
@@ -65,7 +66,7 @@ const orderRows = [
 function AdminDashboard() {
   return (
     <Box sx={{ minHeight: "100vh", background: "#f4f6fb" }}>
-      {/* <AdminNavbar /> */}
+      <UserNavbar />
 
       <Box sx={{ display: "flex" }}>
         <AdminSidebar />

@@ -22,6 +22,14 @@ export const loginAPI = async (userDetails) => {
     userDetails
   )
 }
+export const googleLoginAPI = async (data) => {
+  return await commonAPI(
+    "POST",
+    `${serverURL}/auth/google`,
+    data
+  );
+};
+
 
 // // google login
 // export const googleLoginAPI = async (userDetails) => {
@@ -79,6 +87,15 @@ export const addProductAPI = async (productData,reqHeader) => {
     reqHeader
   );
 };
+// GET all honey for logged-in user (exclude own products)
+export const getUserproductAPI = async (reqHeader) => {
+  return await commonAPI(
+    "GET",
+    `${serverURL}/user/honey`,
+    {},
+    reqHeader
+  );
+};
 //user profile edit
 export const updateUserProfileAPI = async (userId, profileData, reqHeader) => {
   return await commonAPI(
@@ -107,15 +124,23 @@ export const getUserAllHoneyAPI = async (reqHeader) => {
     reqHeader
   );
 };
-export const buyHoneyAPI = async ( reqHeader) => {
+export const buyHoneyAPI = async (honeyId, reqHeader) => {
   return await commonAPI(
     "POST",
-    `${serverURL}/honey/${honeyId}/buy`,
-    {},          // no body needed
+    `${serverURL}/honey/buy`,
+    { honeyId },   // ✅ send honeyId in body
     reqHeader
   );
 };
 
+export const getSellerOrdersAPI = async (reqHeader) => {
+  return await commonAPI(
+    "GET",
+    `${serverURL}/seller/orders`,
+    "",
+    reqHeader
+  );
+};
 /* =========================
    ADMIN APIs
 ========================= */
@@ -141,6 +166,15 @@ export const updateHoneyStatusAdminAPI = async (honeyId, status, reqHeader) => {
     "PUT",
     `${serverURL}/admin/honey/status/${honeyId}`,
     { status },
+    reqHeader
+  );
+};
+// ADMIN – get all orders
+export const getAllOrdersAdminAPI = async (reqHeader) => {
+  return await commonAPI(
+    "GET",
+    `${serverURL}/admin/orders`,
+    "",
     reqHeader
   );
 };

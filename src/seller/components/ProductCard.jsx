@@ -32,7 +32,7 @@ const ProductCard = ({ product, onEdit }) => {
       <CardMedia
         component="img"
         height="170"
-        image={product.image}
+        image={`${serverURL}/uploads/${product.image}`}
         alt={product.name}
         sx={{
           transition: "0.4s",
@@ -82,7 +82,7 @@ const ProductCard = ({ product, onEdit }) => {
 
         {/* ACTION */}
         <Box mt={2}>
-          <Button
+          {/* <Button
             fullWidth
             variant="contained"
             onClick={onEdit}
@@ -104,7 +104,7 @@ const ProductCard = ({ product, onEdit }) => {
             }}
           >
             Edit
-          </Button>
+          </Button> */}
         </Box>
       </CardContent>
     </Card>

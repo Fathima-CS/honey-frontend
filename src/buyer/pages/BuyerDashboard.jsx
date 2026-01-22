@@ -1,25 +1,21 @@
 import React, { useEffect, useState } from "react";
-
 import {
   Box,
   Typography,
   Card,
   CardContent,
   Divider,
+  Stack,
 } from "@mui/material";
 
-/* API */
 import { getUserBoughtHoneyAPI } from "../../services/allAPI";
 
 function BuyerDashboard() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  console.log(orders);
-  
+
   const fetchBoughtHoney = async () => {
     try {
-      // 🔐 Get token correctly
-      const user = JSON.parse(sessionStorage.getItem("user"));
       const token = sessionStorage.getItem("token");
 
       if (!token) {
@@ -34,7 +30,7 @@ function BuyerDashboard() {
       const result = await getUserBoughtHoneyAPI(reqHeader);
       setOrders(result?.data || []);
     } catch (error) {
-      console.error("Failed to fetch bought items", error);
+      console.error("Failed to fetch bought honey", error);
     } finally {
       setLoading(false);
     }
@@ -72,27 +68,31 @@ function BuyerDashboard() {
             </Typography>
           ) : (
             orders.map((order) => (
-              <Box key={order._id} mb={2}>
-                <Typography fontWeight={600}>
-                  {order.productId?.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Quantity: {order.quantity}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color={
-                    order.status === "Delivered"
-                      ? "success.main"
-                      : order.status === "Shipped"
-                      ? "info.main"
-                      : "warning.main"
-                  }
-                >
-                  Status: {order.status}
-                </Typography>
+              <Box key={order._id} mb={3}>
+                <Stack spacing={0.5}>
+                  <Typography fontWeight={600}>
+                    {order.name}
+                  </Typography>
 
-                <Divider sx={{ my: 1 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    Price: ₹{order.price}
+                  </Typography>
+
+                  <Typography variant="body2" color="text.secondary">
+                    Purchased on:{" "}
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    color="success.main"
+                    fontWeight={600}
+                  >
+                    Status: {order.status.toUpperCase()?'delivered':'pending'}
+                  </Typography>
+                </Stack>
+
+                <Divider sx={{ my: 2 }} />
               </Box>
             ))
           )}

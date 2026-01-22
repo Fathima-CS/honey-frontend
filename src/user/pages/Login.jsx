@@ -8,54 +8,56 @@ import {
   Alert,
   Divider,
 } from "@mui/material";
-import GoogleIcon from "@mui/icons-material/Google";
 import { Link, useNavigate } from "react-router-dom";
-import { loginAPI } from "../../services/allAPI";
+
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
+
+import { loginAPI,googleLoginAPI} from "../../services/allAPI";
 import UserNavbar from "../components/UserNavbar";
 import Footer from "../components/Footer";
+
 
 function Login() {
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // handle input change
+  /* =========================
+     INPUT CHANGE
+  ========================= */
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // handle login
+  /* =========================
+     NORMAL LOGIN
+  ========================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    const { email, password } = form;
-
-    if (!email || !password) {
+    if (!form.email || !form.password) {
       setError("All fields are required");
       return;
     }
 
     try {
       setLoading(true);
-      const res = await loginAPI(form);
 
-      const token = res.data?.token;
-      const user = res.data?.user;
+      const res = await loginAPI(form);
+      const token = res?.data?.token;
+      const user = res?.data?.user;
 
       if (!token || !user) {
         setError("Login failed");
-        setLoading(false);
         return;
       }
 
       sessionStorage.setItem("token", token);
+      sessionStorage.setItem("role", user.role);
       sessionStorage.setItem("user", JSON.stringify(user));
 
       if (user.role === "admin") navigate("/admin/dashboard");
@@ -63,25 +65,42 @@ function Login() {
       else navigate("/");
 
     } catch (err) {
-      setError(err?.response?.data || "Invalid email or password ❌");
+      setError(err?.response?.data || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const footerLinks = [
-    { text: "Home", path: "/" },
-    { text: "Register", path: "/register" },
-  ];
+  /* =========================
+     GOOGLE LOGIN
+  ========================= */
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
+
+      const result = await googleLoginAPI({
+        username: decoded.name,
+        email: decoded.email,
+        profilePic: decoded.picture,
+      });
+
+      sessionStorage.setItem("token", result.data.token);
+      sessionStorage.setItem("role", result.data.user.role);
+      sessionStorage.setItem("user", JSON.stringify(result.data.user));
+
+      if (result.data.user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
+    } catch (error) {
+      console.error(error);
+      setError("Google login failed");
+    }
+  };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, rgba(255,236,179,0.9), rgba(255,248,225,1))",
-      }}
-    >
+    <Box sx={{ minHeight: "100vh", background: "#FFF8E1" }}>
       <UserNavbar />
 
       <Box
@@ -90,7 +109,6 @@ function Login() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          px: 2,
         }}
       >
         <Paper
@@ -99,44 +117,20 @@ function Login() {
             p: 4,
             width: "100%",
             maxWidth: 400,
-            borderRadius: 3,
-            background: "rgba(255,193,7,0.18)",
-            backdropFilter: "blur(8px)",
-            border: "1px solid rgba(255,193,7,0.35)",
-            transition: "all 0.35s ease",
-            "&:hover": {
-              transform: "translateY(-6px)",
-              boxShadow: "0 18px 45px rgba(255,193,7,0.35)",
-            },
+            borderRadius: 3, // ✅ FIXED
           }}
         >
-          <Typography
-            variant="h4"
-            align="center"
-            sx={{ fontWeight: 600, color: "#5D4037", mb: 1 }}
-          >
-            Welcome Back 🍯
+          <Typography variant="h4" align="center" mb={2}>
+            Login
           </Typography>
 
-          <Typography
-            align="center"
-            sx={{ color: "#6D4C41", mb: 3, fontSize: "0.95rem" }}
-          >
-            Login to continue exploring HoneyHub
-          </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
+          {error && <Alert severity="error">{error}</Alert>}
 
           <form onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label="Email Address"
+              label="Email"
               name="email"
-              type="email"
               value={form.email}
               onChange={handleChange}
               sx={{ mb: 2 }}
@@ -145,82 +139,39 @@ function Login() {
             <TextField
               fullWidth
               label="Password"
-              name="password"
               type="password"
+              name="password"
               value={form.password}
               onChange={handleChange}
-              sx={{ mb: 3 }}
+              sx={{ mb: 2 }}
             />
 
             <Button
-              type="submit"
               fullWidth
-              size="large"
+              type="submit"
               disabled={loading}
-              sx={{
-                backgroundColor: "rgba(249,168,37,0.9)",
-                color: "#3E2723",
-                fontWeight: 600,
-                "&:hover": {
-                  backgroundColor: "rgba(249,168,37,1)",
-                },
-              }}
+              variant="contained"
             >
               {loading ? "Logging in..." : "Login"}
             </Button>
           </form>
 
-          {/* Divider */}
-          <Box sx={{ my: 3, display: "flex", alignItems: "center" }}>
-            <Divider sx={{ flex: 1 }} />
-            <Typography
-              sx={{ mx: 2, fontSize: "0.85rem", color: "#795548" }}
-            >
-              OR
-            </Typography>
-            <Divider sx={{ flex: 1 }} />
-          </Box>
+          <Divider sx={{ my: 3 }}>OR</Divider>
 
-          {/* Google Login */}
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<GoogleIcon />}
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              borderColor: "#E0E0E0",
-              color: "#424242",
-              backgroundColor: "#fff",
-              "&:hover": {
-                backgroundColor: "#f5f5f5",
-                borderColor: "#BDBDBD",
-              },
-            }}
-            onClick={() =>
-              (window.location.href = "http://localhost:5000/auth/google")
-            }
-          >
-            Continue with Google
-          </Button>
+          {/* ✅ PROPER GOOGLE LOGIN */}
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError("Google login failed")}
+          />
 
-          <Typography align="center" sx={{ mt: 3 }}>
+          <Typography align="center" mt={2}>
             Don&apos;t have an account?{" "}
-            <Link
-              to="/register"
-              style={{
-                color: "#F57F17",
-                fontWeight: 600,
-                textDecoration: "none",
-              }}
-            >
-              Register here
-            </Link>
+            <Link to="/register">Register</Link>
           </Typography>
         </Paper>
       </Box>
 
-      <Footer links={footerLinks} />
+      <Footer />
     </Box>
   );
 }

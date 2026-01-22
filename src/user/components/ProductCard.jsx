@@ -4,6 +4,7 @@ import { ShoppingCart } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { CartContext } from '../../context/CartContext';
+import { image } from 'framer-motion/client';
 
 function ProductCard({ product }) {
   const { addToCart } = useContext(CartContext);
@@ -17,7 +18,7 @@ function ProductCard({ product }) {
       <CardMedia
         component="img"
         height="200"
-        image={product.image || '/assets/images/honey.jpg'}
+        image={`${serverURL}/uploads/${image}`}
         alt={product.name}
       />
       <CardContent>

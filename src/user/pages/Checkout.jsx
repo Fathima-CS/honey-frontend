@@ -27,33 +27,32 @@ function Checkout() {
 
   const token = sessionStorage.getItem("token");
 
-  // 🔐 Redirect if not logged in
+  /* 🔐 redirect if not logged in */
   useEffect(() => {
     if (!token) {
       navigate("/login");
     }
   }, [token, navigate]);
 
-  // 🛒 Redirect if cart empty
+  /* 🛒 redirect if cart empty */
   useEffect(() => {
     if (cart.length === 0) {
       navigate("/cart");
     }
   }, [cart, navigate]);
 
-  // ⛔ stop rendering until redirects happen
+  /* ⛔ stop rendering until redirects complete */
   if (!token || cart.length === 0) {
     return null;
   }
 
-  // ✅ Honey ID from cart (single-product checkout)
-  const honeyId = cart[0].id;
+  /* ✅ single honey checkout */
+  const honey = cart[0];
+  const honeyId = honey._id || honey.id;
 
-  const total = cart.reduce(
-    (sum, item) => sum + item.price * (item.quantity || 1),
-    0
-  );
+  const total = honey.price * (honey.quantity || 1);
 
+  /* 💳 STRIPE PAYMENT */
   const makePayment = async () => {
     try {
       setLoading(true);
@@ -62,9 +61,9 @@ function Checkout() {
         Authorization: `Bearer ${token}`,
       };
 
-      const res = await buyHoneyAPI( reqHeader);
+      const res = await buyHoneyAPI(honeyId, reqHeader);
 
-      // 🔁 Redirect to Stripe Checkout
+      /* 🔁 redirect to Stripe Checkout */
       window.location.href = res.data.checkoutURL;
     } catch (err) {
       console.error("Payment failed", err);
@@ -94,19 +93,19 @@ function Checkout() {
           </Stack>
 
           <Grid container spacing={4}>
-            {/* LEFT */}
+            {/* LEFT SIDE */}
             <Grid item xs={12} md={6}>
               <Card elevation={4} sx={{ borderRadius: 3 }}>
                 <CardContent>
                   <Stack direction="row" spacing={1} alignItems="center" mb={2}>
                     <LocationOnIcon color="secondary" />
                     <Typography variant="h6">
-                      Shipping Address
+                      Delivery Information
                     </Typography>
                   </Stack>
 
                   <Typography color="text.secondary">
-                    Address will be collected after payment.
+                    Address will be collected securely after payment.
                   </Typography>
 
                   <Divider sx={{ my: 3 }} />
@@ -121,7 +120,7 @@ function Checkout() {
               </Card>
             </Grid>
 
-            {/* RIGHT */}
+            {/* RIGHT SIDE */}
             <Grid item xs={12} md={6}>
               <Card elevation={4} sx={{ borderRadius: 3 }}>
                 <CardContent>
@@ -129,21 +128,18 @@ function Checkout() {
                     Order Summary
                   </Typography>
 
-                  {cart.map((item) => (
-                    <Box
-                      key={item.id}
-                      display="flex"
-                      justifyContent="space-between"
-                      mb={1}
-                    >
-                      <Typography>
-                        {item.name} × {item.quantity || 1}
-                      </Typography>
-                      <Typography>
-                        ₹{(item.price * (item.quantity || 1)).toFixed(2)}
-                      </Typography>
-                    </Box>
-                  ))}
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    mb={1}
+                  >
+                    <Typography>
+                      {honey.name} × {honey.quantity || 1}
+                    </Typography>
+                    <Typography>
+                      ₹{total.toFixed(2)}
+                    </Typography>
+                  </Box>
 
                   <Divider sx={{ my: 2 }} />
 

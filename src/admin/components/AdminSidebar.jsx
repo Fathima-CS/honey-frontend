@@ -15,6 +15,7 @@ import {
   Verified,
   ShoppingCart,
   AccountCircle,
+  Logout,
 } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
@@ -54,13 +55,14 @@ function AdminSidebar({ mobileOpen, handleDrawerToggle }) {
     {
       text: "Orders",
       icon: <ShoppingCart />,
-      path: "/orders",
+      path: "/admin/orders",
     },
     {
       text: "Profile",
       icon: <AccountCircle />,
       path: `/profile/${userId}` 
     },
+    
   ];
 
   const drawerContent = (

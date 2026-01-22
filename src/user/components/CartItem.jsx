@@ -3,7 +3,7 @@ import { Box, Typography, IconButton, TextField } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import { CartContext } from '../../context/CartContext';
-
+import serverURL from '../../services/serverURL'
 function CartItem({ item }) {
   const { removeFromCart } = useContext(CartContext);
   const [quantity, setQuantity] = React.useState(item.quantity || 1);
@@ -15,7 +15,6 @@ function CartItem({ item }) {
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderBottom: '1px solid #ddd' }}>
-      <img src={item.image || '/assets/images/honey.jpg'} alt={item.name} style={{ width: 80, height: 80, marginRight: 16 }} />
       <Box sx={{ flexGrow: 1 }}>
         <Typography variant="h6" sx={{ color: 'primary.main' }}>
           {item.name}

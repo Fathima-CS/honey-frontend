@@ -22,21 +22,7 @@ import { CartContext } from "../../context/CartContext";
 function Cart() {
   const { cart } = useContext(CartContext);
 
-  /* ✅ Example cart data (used only if cart is empty) */
-  const demoCart = [
-    {
-      id: 1,
-      name: "Wild Forest Honey",
-      price: 450,
-      quantity: 1,
-      image:
-        "https://i.pinimg.com/1200x/66/dc/c0/66dcc0093fe0779e7425287534908ad7.jpg",
-    },
-  ];
-
-  const cartData = cart.length > 0 ? cart : demoCart;
-
-  const total = cartData.reduce(
+  const total = cart.reduce(
     (sum, item) => sum + item.price * (item.quantity || 1),
     0
   );
@@ -69,20 +55,16 @@ function Cart() {
           </Stack>
 
           {/* Cart Card */}
-          <Card
-            elevation={4}
-            sx={{
-              borderRadius: 3,
-              p: 2,
-            }}
-          >
+          <Card elevation={4} sx={{ borderRadius: 3, p: 2 }}>
             <CardContent>
-              {cartData.length === 0 ? (
-                <Typography>No items in cart.</Typography>
+              {cart.length === 0 ? (
+                <Typography textAlign="center">
+                  Your cart is empty.
+                </Typography>
               ) : (
                 <>
-                  {cartData.map((item) => (
-                    <CartItem key={item.id} item={item} />
+                  {cart.map((item) => (
+                    <CartItem key={item._id || item.id} item={item} />
                   ))}
 
                   <Divider sx={{ my: 3 }} />
@@ -110,11 +92,7 @@ function Cart() {
                   </Box>
 
                   {/* Checkout Button */}
-                  <Box
-                    display="flex"
-                    justifyContent="flex-end"
-                    mt={3}
-                  >
+                  <Box display="flex" justifyContent="flex-end" mt={3}>
                     <Button
                       variant="contained"
                       size="large"

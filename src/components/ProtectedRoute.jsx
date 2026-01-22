@@ -2,14 +2,15 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 
 function PrivateRoute({ children, role }) {
-  const userRole = localStorage.getItem("userRole");
+  const token = sessionStorage.getItem("token");
+  const userRole = sessionStorage.getItem("role");
 
   // Not logged in
-  if (!userRole) {
+  if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  // Role mismatch
+  // Role mismatch (admin / seller / user)
   if (role && userRole !== role) {
     return <Navigate to="/login" replace />;
   }

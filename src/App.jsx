@@ -30,7 +30,7 @@ import AdminLayout from './admin/AdminLayout.jsx';
 import AdminDashboard from './admin/pages/AdminDashboard.jsx';
 import ManageUsers from './admin/pages/ManageUsers.jsx';
 import VerifyProducts from './admin/pages/VerifyProducts.jsx';
-import AdminOrders from './admin/pages/AdminOrders.jsx';
+import OrdersAdmin from './admin/pages/OrdersAdmin.jsx';
 import AdminProfile from './admin/pages/AdminProfile.jsx';
 import BuyerDashboard from './buyer/pages/BuyerDashboard.jsx';
 
@@ -47,7 +47,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/products" element={<MyProducts />} />
+          <Route path="/products" element={<Products />} />
 
           <Route path="/products/:id" element={<ProductDetails />} />
           <Route path="/cart" element={<Cart />} />
@@ -74,7 +74,7 @@ function App() {
             <Route path="/admin/dashboard"  element={<AdminDashboard />} />
             <Route path="/manage-users" element={<ManageUsers />} />
             <Route path="/verify-products" element={<VerifyProducts />} />
-            <Route path="/orders" element={<AdminOrders />} />
+            <Route path="/admin/orders" element={<OrdersAdmin />} />
             <Route path="/profile/:id" element={<AdminProfile />} />
           
 
